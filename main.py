@@ -33,7 +33,7 @@ console = Console()
 # Audio
 
 def load_audio(filename):
-    """Loads a WAV file, resamples it when necessary, and returns stereo float32 audio."""
+    ### Loads a WAV file, resamples it when necessary, and returns stereo float32 audio.
 
     audio, sample_rate = sf.read(filename, dtype="float32", always_2d=True)
 
@@ -60,7 +60,7 @@ def load_audio(filename):
 
 
 def pitch_shift(audio, semitones):
-    """Changes pitch through playback-rate alteration."""
+    ### Changes pitch through playback-rate alteration.
 
     pitch_factor = 2 ** (semitones / 12.0)
     new_length = int(len(audio) / pitch_factor)
@@ -83,7 +83,7 @@ def pitch_shift(audio, semitones):
 
 
 def place_audio(output, sample, time_seconds, gain=1.0):
-    """Places and mixes a sample at the requested position in the output timeline."""
+    ### Places and mixes a sample at the requested position in the output timeline.
 
     start = int(time_seconds * SAMPLE_RATE)
 
@@ -97,7 +97,7 @@ def place_audio(output, sample, time_seconds, gain=1.0):
 # Shuffle bag
 
 class ShuffleBag:
-    """Uses every available sample once before reshuffling the pool."""
+    # Uses every available sample once before reshuffling the pool.
 
     def __init__(self, items):
         self.items = items

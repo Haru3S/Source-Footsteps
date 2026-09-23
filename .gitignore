@@ -1,3 +1,8 @@
+# Build
+build/
+dist/
+*.spec
+
 # Generated audio
 generated_footsteps.wav
 
