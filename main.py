@@ -1,6 +1,7 @@
 from pathlib import Path
 from math import gcd
 import random
+import sys
 
 import numpy as np
 import soundfile as sf
@@ -11,9 +12,6 @@ from rich.panel import Panel
 from rich.prompt import FloatPrompt
 from rich.table import Table
 
-
-SAMPLE_FOLDER = Path("footsteps")
-OUTPUT_FILE = Path("generated_footsteps.wav")
 
 SAMPLE_RATE = 48000
 CHANNELS = 2
@@ -30,10 +28,21 @@ TIMING_VARIATION = 0.03
 console = Console()
 
 
+# Paths
+
+if getattr(sys, "frozen", False):
+    BASE_DIR = Path(sys.executable).parent
+else:
+    BASE_DIR = Path(__file__).parent
+
+SAMPLE_FOLDER = BASE_DIR / "footsteps"
+OUTPUT_FILE = BASE_DIR / "generated_footsteps.wav"
+
+
 # Audio
 
 def load_audio(filename):
-    ### Loads a WAV file, resamples it when necessary, and returns stereo float32 audio.
+    ## Loads a WAV file, resamples it when necessary, and returns stereo float32 audio.
 
     audio, sample_rate = sf.read(filename, dtype="float32", always_2d=True)
 
@@ -41,6 +50,7 @@ def load_audio(filename):
 
     if sample_rate != SAMPLE_RATE:
         divisor = gcd(sample_rate, SAMPLE_RATE)
+
         audio = resample_poly(
             audio,
             SAMPLE_RATE // divisor,
@@ -60,7 +70,7 @@ def load_audio(filename):
 
 
 def pitch_shift(audio, semitones):
-    ### Changes pitch through playback-rate alteration.
+    ## Changes pitch through playback-rate alteration.
 
     pitch_factor = 2 ** (semitones / 12.0)
     new_length = int(len(audio) / pitch_factor)
@@ -83,7 +93,7 @@ def pitch_shift(audio, semitones):
 
 
 def place_audio(output, sample, time_seconds, gain=1.0):
-    ### Places and mixes a sample at the requested position in the output timeline.
+    ## Places and mixes a sample at the requested position in the output timeline.
 
     start = int(time_seconds * SAMPLE_RATE)
 
@@ -97,7 +107,7 @@ def place_audio(output, sample, time_seconds, gain=1.0):
 # Shuffle bag
 
 class ShuffleBag:
-    # Uses every available sample once before reshuffling the pool.
+    ## Uses every available sample once before reshuffling the pool.
 
     def __init__(self, items):
         self.items = items
@@ -146,14 +156,22 @@ def configuration_menu(sample_count):
         )
     )
 
-    console.print(f"\n[green]✓[/green] Found [bold]{sample_count}[/bold] WAV samples in [cyan]footsteps/[/cyan]\n")
+    console.print(
+        f"\n[green]✓[/green] Found [bold]{sample_count}[/bold] "
+        f"WAV samples in [cyan]footsteps/[/cyan]\n"
+    )
 
-    duration = get_positive_float("[bold]Duration[/bold] [dim](seconds)[/dim]", 60.0)
+    duration = get_positive_float(
+        "[bold]Duration[/bold] [dim](seconds)[/dim]",
+        60.0
+    )
+
     tail_duration = get_positive_float(
         "[bold]Tail duration[/bold] [dim](seconds)[/dim]",
         10.0,
         allow_zero=True
     )
+
     step_interval = get_positive_float(
         "[bold]Step interval[/bold] [dim](seconds)[/dim]",
         0.52
@@ -179,6 +197,7 @@ def configuration_menu(sample_count):
 
 def render(samples, duration, tail_duration, step_interval):
     total_duration = duration + tail_duration
+
     output = np.zeros(
         (int(total_duration * SAMPLE_RATE), CHANNELS),
         dtype=np.float32
@@ -227,6 +246,8 @@ def main():
                 border_style="red"
             )
         )
+
+        input("\nPress Enter to exit...")
         return
 
     duration, tail_duration, step_interval = configuration_menu(len(files))
@@ -265,7 +286,7 @@ def main():
     console.print(
         Panel.fit(
             f"[green bold]Render complete[/green bold]\n\n"
-            f"Output: [cyan]{OUTPUT_FILE}[/cyan]\n"
+            f"Output: [cyan]{OUTPUT_FILE.name}[/cyan]\n"
             f"Steps generated: [bold]{step_count}[/bold]\n"
             f"Duration: [bold]{duration + tail_duration:.2f} s[/bold]\n"
             f"Sample rate: [bold]{SAMPLE_RATE:,} Hz[/bold]\n"
@@ -274,6 +295,7 @@ def main():
         )
     )
 
+    input("\nPress Enter to exit...")
 
 if __name__ == "__main__":
     main()
