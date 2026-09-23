@@ -25,3 +25,38 @@
     <img alt="GitHub License" src="https://img.shields.io/github/license/Haru3S/Source-Footsteps?style=for-the-badge&labelColor=363a4f&color=f5a97f">
   </a>
 </p>  
+
+<p align="center">
+
+**Source-Footsteps** is a small CLI script meant to take inputted footstep samples and bake them into one clip for audio effects on third party programs. Source-Footsteps is inspired by the [Source Engine](https://developer.valvesoftware.com/wiki/Team_Fortress_2_engine_branch).
+
+Also this program was made from shear frustration as I could not find a existing or free program that did what I wanted to do, so I'm making this project free and open source for anybody that needs this really specific niche.
+
+## Installing
+
+### Standalone
+
+You can download the prebuilt Windows executable under [Releases](https://github.com/Haru3S/Source-Footsteps/releases).
+
+### Building from Source
+
+Download the repository as a ZIP file and extract it, or clone the repository:
+
+```bash
+git clone https://github.com/Haru3S/Source-Footsteps.git
+```
+
+Install the required dependencies:
+```bash
+python -m pip install -r requirements.txt
+```
+Build the executable using PyInstaller:
+```bash
+python -m PyInstaller --onefile --name SourceFootGen main.py
+```
+The compiled executable will be located at `dist/
+SourceFootGen.exe`.
+
+Create a `footsteps` folder next to the executable and place your `.wav` samples inside it.
+
+</p>
