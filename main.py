@@ -55,7 +55,7 @@ RARE_TOOL_TIPS = [
 
 
 def get_tool_tip():
-    if random.random() < 0.02:
+    if random.random() < 0.30:
         return random.choice(RARE_TOOL_TIPS)
 
     return random.choice(TOOL_TIPS)
