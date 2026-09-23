@@ -89,6 +89,7 @@ Create a `footsteps` folder next to the executable and place your `.wav` samples
 ## 🌟 Credits
 
 Inspiration: [**Source SDK 2013**](https://github.com/ValveSoftware/source-sdk-2013) by Valve Software
+
 My cat: **Kiki**
 
 
