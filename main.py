@@ -1,156 +1,78 @@
 from pathlib import Path
+from math import gcd
 import random
 
 import numpy as np
 import soundfile as sf
 from scipy.signal import resample_poly
 
+from rich.console import Console
+from rich.panel import Panel
+from rich.prompt import FloatPrompt
+from rich.table import Table
 
-# ============================================================
-# SETTINGS
-# ============================================================
 
-# Folder containing your 12 footstep WAV files.
 SAMPLE_FOLDER = Path("footsteps")
-
-# Exported file.
 OUTPUT_FILE = Path("generated_footsteps.wav")
 
-# Length of the actual footstep sequence.
-DURATION = 75.0
+SAMPLE_RATE = 48000
+CHANNELS = 2
+OUTPUT_PEAK = 0.90
 
-# Extra silence after the last possible step.
-#
-# This is useful when you later apply reverb because the
-# exported track continues beyond the action instead of
-# immediately ending.
-TAIL_DURATION = 10.0
-
-# Time between footsteps.
-STEP_INTERVAL = 1.4
-
-# Random variation in timing.
-#
-# Example:
-# 0.03 means each step can move +/- 0.03 seconds.
-TIMING_VARIATION = 0.03
-
-# Volume/velocity range.
 MIN_VELOCITY = 0.80
 MAX_VELOCITY = 1.00
 
-# Pitch variation in semitones.
-#
-# +/- 0.5 is intentionally subtle.
 MIN_PITCH = -0.5
 MAX_PITCH = 0.5
 
-# Output settings.
-SAMPLE_RATE = 48000
-CHANNELS = 2
+TIMING_VARIATION = 0.03
 
-# Leave some headroom instead of normalizing all the way
-# to digital maximum.
-OUTPUT_PEAK = 0.90
+console = Console()
 
 
-# ============================================================
-# AUDIO FUNCTIONS
-# ============================================================
+# Audio
 
 def load_audio(filename):
-    """
-    Load a WAV file and convert it to stereo float32.
-    """
+    """Loads a WAV file, resamples it when necessary, and returns stereo float32 audio."""
 
-    audio, sample_rate = sf.read(
-        filename,
-        dtype="float32",
-        always_2d=True
-    )
+    audio, sample_rate = sf.read(filename, dtype="float32", always_2d=True)
 
-    # --------------------------------------------------------
-    # Convert sample rate if necessary
-    # --------------------------------------------------------
+    # Convert sample rate
 
     if sample_rate != SAMPLE_RATE:
-
-        print(
-            f"Resampling {filename.name}: "
-            f"{sample_rate} Hz -> {SAMPLE_RATE} Hz"
-        )
-
-        # Determine integer ratio for scipy resample_poly.
-        from math import gcd
-
         divisor = gcd(sample_rate, SAMPLE_RATE)
-
-        up = SAMPLE_RATE // divisor
-        down = sample_rate // divisor
-
         audio = resample_poly(
             audio,
-            up,
-            down,
+            SAMPLE_RATE // divisor,
+            sample_rate // divisor,
             axis=0
         ).astype(np.float32)
 
-    # --------------------------------------------------------
     # Convert channels
-    # --------------------------------------------------------
 
     if audio.shape[1] == 1:
-
-        # Mono -> stereo
         audio = np.repeat(audio, 2, axis=1)
 
     elif audio.shape[1] > 2:
-
-        # If somehow given multichannel audio,
-        # just use the first two channels.
         audio = audio[:, :2]
 
     return audio
 
 
 def pitch_shift(audio, semitones):
-    """
-    Simple pitch shift.
-
-    Changes the playback speed of the sample, which changes
-    both pitch and sample duration.
-
-    For subtle footstep variation this generally works well.
-    """
+    """Changes pitch through playback-rate alteration."""
 
     pitch_factor = 2 ** (semitones / 12.0)
-
-    original_length = len(audio)
-
-    new_length = int(
-        original_length / pitch_factor
-    )
+    new_length = int(len(audio) / pitch_factor)
 
     if new_length <= 0:
         return audio
 
-    # Generate positions in original audio.
-    old_positions = np.arange(original_length)
+    old_positions = np.arange(len(audio))
+    new_positions = np.linspace(0, len(audio) - 1, new_length)
+    result = np.zeros((new_length, audio.shape[1]), dtype=np.float32)
 
-    new_positions = np.linspace(
-        0,
-        original_length - 1,
-        new_length
-    )
-
-    result = np.zeros(
-        (new_length, audio.shape[1]),
-        dtype=np.float32
-    )
-
-    # Interpolate each channel.
     for channel in range(audio.shape[1]):
-
         result[:, channel] = np.interp(
             new_positions,
             old_positions,
@@ -161,50 +83,21 @@ def pitch_shift(audio, semitones):
 
 
 def place_audio(output, sample, time_seconds, gain=1.0):
-    """
-    Mix a sample into the output timeline.
-    """
+    """Places and mixes a sample at the requested position in the output timeline."""
 
-    start_sample = int(
-        time_seconds * SAMPLE_RATE
-    )
+    start = int(time_seconds * SAMPLE_RATE)
 
-    if start_sample < 0:
+    if start < 0 or start >= len(output):
         return
 
-    if start_sample >= len(output):
-        return
-
-    end_sample = start_sample + len(sample)
-
-    # Prevent writing beyond output.
-    if end_sample > len(output):
-        end_sample = len(output)
-
-    amount = end_sample - start_sample
-
-    if amount <= 0:
-        return
-
-    output[
-        start_sample:end_sample
-    ] += sample[:amount] * gain
+    end = min(start + len(sample), len(output))
+    output[start:end] += sample[:end - start] * gain
 
 
-# ============================================================
-# SHUFFLE BAG
-# ============================================================
+# Shuffle bag
 
 class ShuffleBag:
-    """
-    Randomly uses every footstep before repeating the pool.
-
-    This avoids things like:
-
-        3, 3, 3, 7, 3
-
-    which can happen with pure random.choice().
-    """
+    """Uses every available sample once before reshuffling the pool."""
 
     def __init__(self, items):
         self.items = items
@@ -212,212 +105,155 @@ class ShuffleBag:
         self.previous = None
 
     def refill(self):
-
         self.bag = list(range(len(self.items)))
-
         random.shuffle(self.bag)
 
-        # Try to prevent the first sample of the new bag
-        # from matching the final sample of the previous bag.
-        if (
-            self.previous is not None
-            and len(self.bag) > 1
-            and self.bag[-1] == self.previous
-        ):
-            self.bag[-1], self.bag[0] = (
-                self.bag[0],
-                self.bag[-1]
-            )
+        #### Avoid repeating the final sample of the previous bag.
+
+        if self.previous is not None and len(self.bag) > 1 and self.bag[-1] == self.previous:
+            self.bag[-1], self.bag[0] = self.bag[0], self.bag[-1]
 
     def next(self):
-
         if not self.bag:
             self.refill()
 
         index = self.bag.pop()
-
         self.previous = index
 
-        return index, self.items[index]
+        return self.items[index]
 
 
-# ============================================================
-# MAIN GENERATOR
-# ============================================================
+# Interface
 
-def main():
+def get_positive_float(label, default, allow_zero=False):
+    while True:
+        value = FloatPrompt.ask(label, default=default)
 
-    print()
-    print("==============================")
-    print("     FOOTSTEP GENERATOR")
-    print("==============================")
-    print()
+        if value > 0 or (allow_zero and value == 0):
+            return value
 
-    # --------------------------------------------------------
-    # Find WAV files
-    # --------------------------------------------------------
+        console.print("[red]Value must be greater than zero.[/red]")
 
-    files = sorted(
-        SAMPLE_FOLDER.glob("*.wav")
-    )
 
-    if not files:
-        print(
-            f"ERROR: No WAV files found in "
-            f"'{SAMPLE_FOLDER}'"
+def configuration_menu(sample_count):
+    console.clear()
+
+    console.print(
+        Panel.fit(
+            "[bold]FOOTSTEP GENERATOR[/bold]\n"
+            "[dim]Procedural footstep track renderer[/dim]",
+            border_style="cyan"
         )
-        return
-
-    print(
-        f"Found {len(files)} footstep samples."
     )
 
-    for file in files:
-        print(f"  - {file.name}")
+    console.print(f"\n[green]✓[/green] Found [bold]{sample_count}[/bold] WAV samples in [cyan]footsteps/[/cyan]\n")
 
-    print()
-
-    # --------------------------------------------------------
-    # Load all samples
-    # --------------------------------------------------------
-
-    print("Loading samples...")
-
-    samples = []
-
-    for file in files:
-
-        audio = load_audio(file)
-
-        samples.append(
-            {
-                "name": file.name,
-                "audio": audio
-            }
-        )
-
-    print("Samples loaded.")
-    print()
-
-    # --------------------------------------------------------
-    # Create output timeline
-    # --------------------------------------------------------
-
-    total_duration = (
-        DURATION + TAIL_DURATION
+    duration = get_positive_float("[bold]Duration[/bold] [dim](seconds)[/dim]", 60.0)
+    tail_duration = get_positive_float(
+        "[bold]Tail duration[/bold] [dim](seconds)[/dim]",
+        10.0,
+        allow_zero=True
+    )
+    step_interval = get_positive_float(
+        "[bold]Step interval[/bold] [dim](seconds)[/dim]",
+        0.52
     )
 
-    total_samples = int(
-        total_duration * SAMPLE_RATE
-    )
+    table = Table(title="Render Settings", show_header=False, border_style="cyan")
+    table.add_column("Setting", style="bold")
+    table.add_column("Value", justify="right")
 
+    table.add_row("Duration", f"{duration:.2f} s")
+    table.add_row("Tail duration", f"{tail_duration:.2f} s")
+    table.add_row("Step interval", f"{step_interval:.3f} s")
+    table.add_row("Output duration", f"{duration + tail_duration:.2f} s")
+
+    console.print()
+    console.print(table)
+    console.print()
+
+    return duration, tail_duration, step_interval
+
+
+# Renderer
+
+def render(samples, duration, tail_duration, step_interval):
+    total_duration = duration + tail_duration
     output = np.zeros(
-        (total_samples, CHANNELS),
+        (int(total_duration * SAMPLE_RATE), CHANNELS),
         dtype=np.float32
     )
-
-    # --------------------------------------------------------
-    # Generate footsteps
-    # --------------------------------------------------------
 
     bag = ShuffleBag(samples)
 
     current_time = 0.0
-    step_number = 1
+    step_count = 0
 
-    print("Generating footsteps...")
-    print()
+    while current_time < duration:
+        sample = bag.next()
 
-    while current_time < DURATION:
+        velocity = random.uniform(MIN_VELOCITY, MAX_VELOCITY)
+        pitch = random.uniform(MIN_PITCH, MAX_PITCH)
 
-        index, sample_data = bag.next()
+        processed = pitch_shift(sample["audio"], pitch)
+        place_audio(output, processed, current_time, velocity)
 
-        sample = sample_data["audio"]
-        name = sample_data["name"]
+        interval = step_interval + random.uniform(-TIMING_VARIATION, TIMING_VARIATION)
+        current_time += max(interval, 0.001)
 
-        # ----------------------------------------------------
-        # Velocity
-        # ----------------------------------------------------
+        step_count += 1
 
-        velocity = random.uniform(
-            MIN_VELOCITY,
-            MAX_VELOCITY
-        )
+    # Normalize
 
-        # ----------------------------------------------------
-        # Pitch
-        # ----------------------------------------------------
-
-        pitch = random.uniform(
-            MIN_PITCH,
-            MAX_PITCH
-        )
-
-        processed = pitch_shift(
-            sample,
-            pitch
-        )
-
-        # ----------------------------------------------------
-        # Place sample
-        # ----------------------------------------------------
-
-        place_audio(
-            output,
-            processed,
-            current_time,
-            velocity
-        )
-
-        print(
-            f"Step {step_number:03d} | "
-            f"{current_time:7.3f}s | "
-            f"{name:<20} | "
-            f"Velocity {velocity:.2f} | "
-            f"Pitch {pitch:+.2f} st"
-        )
-
-        # ----------------------------------------------------
-        # Determine next step
-        # ----------------------------------------------------
-
-        interval = (
-            STEP_INTERVAL
-            + random.uniform(
-                -TIMING_VARIATION,
-                TIMING_VARIATION
-            )
-        )
-
-        current_time += interval
-        step_number += 1
-
-    # --------------------------------------------------------
-    # Protect against clipping
-    # --------------------------------------------------------
-
-    peak = np.max(
-        np.abs(output)
-    )
+    peak = np.max(np.abs(output))
 
     if peak > OUTPUT_PEAK:
+        output *= OUTPUT_PEAK / peak
 
-        scale = OUTPUT_PEAK / peak
+    return output, step_count
 
-        print()
-        print(
-            f"Peak was {peak:.3f}. "
-            f"Scaling output by {scale:.3f}."
+
+# Main
+
+def main():
+    files = sorted(SAMPLE_FOLDER.glob("*.wav"))
+
+    if not files:
+        console.print(
+            Panel(
+                "[red bold]No WAV samples found.[/red bold]\n\n"
+                "Place your footstep samples inside the [cyan]footsteps/[/cyan] folder.",
+                title="Error",
+                border_style="red"
+            )
+        )
+        return
+
+    duration, tail_duration, step_interval = configuration_menu(len(files))
+
+    console.print("[bold]Loading samples...[/bold]")
+
+    samples = []
+
+    for file in files:
+        samples.append(
+            {
+                "name": file.name,
+                "audio": load_audio(file)
+            }
         )
 
-        output *= scale
+    console.print("[green]✓[/green] Samples loaded")
+    console.print("[bold]Generating track...[/bold]")
 
-    # --------------------------------------------------------
-    # Export
-    # --------------------------------------------------------
+    output, step_count = render(
+        samples,
+        duration,
+        tail_duration,
+        step_interval
+    )
 
-    print()
-    print("Exporting...")
+    console.print("[bold]Exporting WAV...[/bold]")
 
     sf.write(
         OUTPUT_FILE,
@@ -426,36 +262,17 @@ def main():
         subtype="PCM_24"
     )
 
-    print()
-    print("==============================")
-    print("DONE")
-    print("==============================")
-
-    print(
-        f"Output: {OUTPUT_FILE}"
+    console.print(
+        Panel.fit(
+            f"[green bold]Render complete[/green bold]\n\n"
+            f"Output: [cyan]{OUTPUT_FILE}[/cyan]\n"
+            f"Steps generated: [bold]{step_count}[/bold]\n"
+            f"Duration: [bold]{duration + tail_duration:.2f} s[/bold]\n"
+            f"Sample rate: [bold]{SAMPLE_RATE:,} Hz[/bold]\n"
+            f"Format: [bold]24-bit WAV[/bold]",
+            border_style="green"
+        )
     )
-
-    print(
-        f"Footstep duration: "
-        f"{DURATION:.2f} seconds"
-    )
-
-    print(
-        f"Tail: "
-        f"{TAIL_DURATION:.2f} seconds"
-    )
-
-    print(
-        f"Total WAV duration: "
-        f"{total_duration:.2f} seconds"
-    )
-
-    print(
-        f"Steps generated: "
-        f"{step_number - 1}"
-    )
-
-    print()
 
 
 if __name__ == "__main__":
