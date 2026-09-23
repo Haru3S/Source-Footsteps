@@ -30,7 +30,7 @@
 
 Also this program was made from shear frustration as I could not find a existing or free program that did what I wanted to do, so I'm making this project free and open source for anybody that needs this really specific niche.
 
-## Installing
+## 📦 Installing
 
 ### Standalone
 
@@ -59,10 +59,13 @@ SourceFootGen.exe`.
 
 Create a `footsteps` folder next to the executable and place your `.wav` samples inside it.
 
-## How To Use
+## 📖 How To Use
 
-> [!IMPORTANT]
+> [!TIP]
 > The program is unaware of material types so input samples of the material you want.
+
+> [!TIP]
+> Recommended to use `.wav` filetypes.
 
 **Duration:** How long you want the baked track to be.
 
@@ -71,5 +74,13 @@ Create a `footsteps` folder next to the executable and place your `.wav` samples
 <img src="https://github.com/Haru3S/Source-Footsteps/blob/main/.github/assets/tail.png?raw=true">
 
 **Step Interval:** How much time between each sample.
+
+### Third-Party Samples
+
+- [Half-Life 2 Footsteps](https://github.com/sourcesounds/hl2/tree/master/sound/player/footsteps)
+- [Team Fortress 2 Footsteps](https://github.com/sourcesounds/tf/tree/master/sound/player/footsteps)
+
+## 🖼️ Screenshots
+
 
 </p>
