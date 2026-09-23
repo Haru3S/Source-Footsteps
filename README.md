@@ -22,7 +22,7 @@
   <a href="https://github.com/Haru3S/Source-Footsteps/blob/main/LICENSE.md">
     <img alt="GitHub License" src="https://img.shields.io/github/license/Haru3S/Source-Footsteps?style=for-the-badge&labelColor=363a4f&color=f5a97f">
   </a>
-</p>  
+</p>
 
 **Source-Footsteps** is a small CLI program meant to take footstep samples and bake them into a single audio clip for use with audio effects in third-party programs. Source-Footsteps is inspired by the [Source Engine](https://developer.valvesoftware.com/wiki/Team_Fortress_2_engine_branch).
 
