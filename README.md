@@ -65,7 +65,10 @@ Create a `footsteps` folder next to the executable and place your `.wav` samples
 > The program is unaware of material types so input samples of the material you want.
 
 **Duration:** How long you want the baked track to be.
+
 **Tail Length:** How much extra track length you want (for Reverb/Delay effects).
+
+<img src="https://github.com/Haru3S/Source-Footsteps/blob/main/.github/assets/tail.png?raw=true">
 
 **Step Interval:** How much time between each sample.
 
