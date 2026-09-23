@@ -150,6 +150,11 @@ TOOL_TIPS = [
         "text": "🏳️‍⚧️",
         "type": "quality",
         "rarity": "Collector's"
+    },
+    {
+        "text": "Spoopy season!",
+        "type": "quality",
+        "rarity": "Haunted"
     }
 ]
 
