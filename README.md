@@ -93,3 +93,4 @@ Inspiration: [**Source SDK 2013**](https://github.com/ValveSoftware/source-sdk-2
 
 My cat: **Kiki**
 
+<img src="https://github.com/Haru3S/Source-Footsteps/blob/main/.github/assets/kiki.JPG?raw=true" height="350">
