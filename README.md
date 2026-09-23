@@ -36,9 +36,11 @@ Also this program was made from shear frustration as I could not find a existing
 
 You can download the prebuilt Windows executable under [Releases](https://github.com/Haru3S/Source-Footsteps/releases).
 
+Extract the `.zip`, import samples in the `footsteps` folder and then run `SourceFootGen.exe`.
+
 ### Building from Source
 
-Download the repository as a ZIP file and extract it, or clone the repository:
+Download the repository as a `.zip` file and extract it, or clone the repository:
 
 ```bash
 git clone https://github.com/Haru3S/Source-Footsteps.git
@@ -56,5 +58,15 @@ The compiled executable will be located at `dist/
 SourceFootGen.exe`.
 
 Create a `footsteps` folder next to the executable and place your `.wav` samples inside it.
+
+## How To Use
+
+> [!IMPORTANT]
+> The program is unaware of material types so input samples of the material you want.
+
+**Duration:** How long you want the baked track to be.
+**Tail Length:** How much extra track length you want (for Reverb/Delay effects).
+
+**Step Interval:** How much time between each sample.
 
 </p>
