@@ -1,0 +1,14 @@
+# Generated audio
+generated_footsteps.wav
+
+# User footstep samples
+footsteps/*
+!footsteps/.gitkeep
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
