@@ -1,8 +1,6 @@
 <div align="center">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Haru3S/AstraHUD/refs/heads/release/.github/src/icons/H3S%20Logo%20Solid_White.svg" height="100">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Haru3S/AstraHUD/03c4a63ce71b215dd3b6239eb8763739c1508162/.github/src/icons/H3S%20Logo%20Solid_Black.svg" height="100">
-  <img alt="Fallback image description" src="https://github.com/Haru3S/AstraHUD/blob/release/.github/src/icons/H3S%20Logo%20Solid_White.svg" height="100"/>
+  <img src="https://github.com/Haru3S/Source-Footsteps/blob/main/.github/src/icons/H3S%20Logo%20DUALTONE.svg?raw=true" height="100" />
 </picture>
 </div>
 
