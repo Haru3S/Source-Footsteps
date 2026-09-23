@@ -12,6 +12,8 @@ from rich.panel import Panel
 from rich.prompt import FloatPrompt
 from rich.table import Table
 
+from tooltips import get_tool_tip, TOOL_TIP_COLORS
+
 
 SAMPLE_RATE = 48000
 CHANNELS = 2
@@ -24,42 +26,6 @@ MIN_PITCH = -0.5
 MAX_PITCH = 0.5
 
 TIMING_VARIATION = 0.03
-
-TOOL_TIPS = [
-    "Enchanced with Phoxy's Girl Juice :3",
-    "Kept you waiting, huh?",
-    "You're pretty good.",
-    "I was the one inside the locker that time.",
-    "You remember pre-ripped jeans?",
-    "What do jeans have to do with nature and order?",
-    "The Orange 📦",
-    "I know what you are! 🫵",
-    "Who's the tough guy now, huh, tough guy?",
-    "No otha' class gonna do dat!",
-    "I don't know who to thank first... Oh, I know, me!",
-    "Un-freakin'-touchable!",
-    "I love my ball!",
-    "Hey, I can see my base from here!",
-    "Last one alive, lock the door!",
-    "If God had wanted you to live, He would not have created me!",
-    "Sun Tzu might have invented the War, but we invented winning them!",
-    "haru3s.carrd.co"
-]
-
-RARE_TOOL_TIPS = [
-    "giv me money for estrogen → (LTC) LcUtH8fceM2hMvwtZ43MKQWbaUb7KM8ZVC",
-    "nice balls you got there!"
-    "This program was written by a transfem!",
-    "🏳️‍⚧️"
-]
-
-
-def get_tool_tip():
-    if random.random() < 0.30:
-        return random.choice(RARE_TOOL_TIPS)
-
-    return random.choice(TOOL_TIPS)
-
 
 TOOL_TIP = get_tool_tip()
 
@@ -186,11 +152,14 @@ def get_positive_float(label, default, allow_zero=False):
 def configuration_menu(sample_count):
     console.clear()
 
+    rarity = TOOL_TIP["rarity"]
+    color = TOOL_TIP_COLORS[rarity]
+
     console.print(
         Panel.fit(
             "[bold]Source-Footsteps[/bold]\n"
-            f"[dim]{TOOL_TIP}[/dim]",
-            border_style="cyan"
+            f"[{color}]{TOOL_TIP['text']}[/{color}]",
+            border_style=color
         )
     )
 
