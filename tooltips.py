@@ -39,6 +39,7 @@ TOOL_TIP_WEIGHTS = {
     "Collector's": 2
 }
 
+## Check if this list can be managed inside a JSON
 
 TOOL_TIPS = [
     {
@@ -63,13 +64,13 @@ TOOL_TIPS = [
     },
     {
         "text": "You remember pre-ripped jeans?",
-        "type": "decorated",
-        "rarity": "Freelance"
+        "type": "quality",
+        "rarity": "Unusual"
     },
     {
         "text": "What do jeans have to do with nature and order?",
-        "type": "decorated",
-        "rarity": "Mercenary"
+        "type": "quality",
+        "rarity": "Unusual"
     },
     {
         "text": "The Orange 📦",
@@ -84,7 +85,7 @@ TOOL_TIPS = [
     {
         "text": "Who's the tough guy now, huh, tough guy?",
         "type": "quality",
-        "rarity": "Normal"
+        "rarity": "Unique"
     },
     {
         "text": "No otha' class gonna do dat!",
@@ -117,19 +118,19 @@ TOOL_TIPS = [
         "rarity": "Mercenary"
     },
     {
-        "text": "If God had wanted you to live, He would not have created me!",
+        "text": "Private Twinkletoes",
         "type": "decorated",
         "rarity": "Commando"
     },
     {
-        "text": "Sun Tzu might have invented the War, but we invented winning them!",
+        "text": "you should give me 1100 keys trust!",
         "type": "decorated",
         "rarity": "Elite"
     },
     {
         "text": "haru3s.carrd.co",
         "type": "quality",
-        "rarity": "Unique"
+        "rarity": "Normal"
     },
     {
         "text": "giv me money for estrogen → (LTC) LcUtH8fceM2hMvwtZ43MKQWbaUb7KM8ZVC",
@@ -137,14 +138,14 @@ TOOL_TIPS = [
         "rarity": "Strange"
     },
     {
-        "text": "nice balls you got there!",
+        "text": "Gimmie some more!",
         "type": "quality",
         "rarity": "Strange"
     },
     {
-        "text": "This program was written by a transfem!",
+        "text": "Collector's Professional Killstreak Rocket Jumper",
         "type": "quality",
-        "rarity": "Unusual"
+        "rarity": "Collector's"
     },
     {
         "text": "🏳️‍⚧️",
@@ -155,6 +156,21 @@ TOOL_TIPS = [
         "text": "Spoopy season!",
         "type": "quality",
         "rarity": "Haunted"
+    },
+    {
+        "text": "Trapper's Flap is the all-class hat",
+        "type": "decorated",
+        "rarity": "Elite",
+    },
+    {
+        "text": "Voices From Below",
+        "type": "quality",
+        "rarity": "Haunted"
+    },
+    {
+        "text": "Strange Isn't...",
+        "type": "quality",
+        "rarity": "Strange"
     }
 ]
 
