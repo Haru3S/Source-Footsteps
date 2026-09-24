@@ -1,6 +1,21 @@
+from pathlib import Path
 from datetime import datetime
+import json
 import random
+import sys
 
+
+# Paths
+
+if getattr(sys, "frozen", False):
+    BASE_DIR = Path(sys._MEIPASS)
+else:
+    BASE_DIR = Path(__file__).parent
+
+TOOL_TIP_FILE = BASE_DIR / "tooltips.json"
+
+
+# Tool tip colors
 
 TOOL_TIP_COLORS = {
     # Decorated Grades
@@ -21,6 +36,8 @@ TOOL_TIP_COLORS = {
 }
 
 
+# Tool tip weights
+
 TOOL_TIP_WEIGHTS = {
     # Decorated Grades
     "Civilian": 20,
@@ -39,155 +56,40 @@ TOOL_TIP_WEIGHTS = {
     "Collector's": 2
 }
 
-## Check if this list can be managed inside a JSON
 
-TOOL_TIPS = [
-    {
-        "text": "Enchanced with Phoxy's Girl Juice :3",
-        "type": "quality",
-        "rarity": "Unique"
-    },
-    {
-        "text": "Kept you waiting, huh?",
-        "type": "quality",
-        "rarity": "Unique"
-    },
-    {
-        "text": "You're pretty good.",
-        "type": "quality",
-        "rarity": "Unique"
-    },
-    {
-        "text": "I was the one inside the locker that time.",
-        "type": "decorated",
-        "rarity": "Civilian"
-    },
-    {
-        "text": "You remember pre-ripped jeans?",
-        "type": "quality",
-        "rarity": "Unusual"
-    },
-    {
-        "text": "What do jeans have to do with nature and order?",
-        "type": "quality",
-        "rarity": "Unusual"
-    },
-    {
-        "text": "The Orange 📦",
-        "type": "decorated",
-        "rarity": "Commando"
-    },
-    {
-        "text": "I know what you are! 🫵",
-        "type": "decorated",
-        "rarity": "Assassin"
-    },
-    {
-        "text": "Who's the tough guy now, huh, tough guy?",
-        "type": "quality",
-        "rarity": "Unique"
-    },
-    {
-        "text": "No otha' class gonna do dat!",
-        "type": "quality",
-        "rarity": "Normal"
-    },
-    {
-        "text": "I don't know who to thank first... Oh, I know, me!",
-        "type": "quality",
-        "rarity": "Unique"
-    },
-    {
-        "text": "Un-freakin'-touchable!",
-        "type": "quality",
-        "rarity": "Unique"
-    },
-    {
-        "text": "I love my ball!",
-        "type": "decorated",
-        "rarity": "Civilian"
-    },
-    {
-        "text": "Hey, I can see my base from here!",
-        "type": "decorated",
-        "rarity": "Freelance"
-    },
-    {
-        "text": "Last one alive, lock the door!",
-        "type": "decorated",
-        "rarity": "Mercenary"
-    },
-    {
-        "text": "Private Twinkletoes",
-        "type": "decorated",
-        "rarity": "Commando"
-    },
-    {
-        "text": "you should give me 1100 keys trust!",
-        "type": "decorated",
-        "rarity": "Elite"
-    },
-    {
-        "text": "haru3s.carrd.co",
-        "type": "quality",
-        "rarity": "Normal"
-    },
-    {
-        "text": "giv me money for estrogen → (LTC) LcUtH8fceM2hMvwtZ43MKQWbaUb7KM8ZVC",
-        "type": "quality",
-        "rarity": "Strange"
-    },
-    {
-        "text": "Gimmie some more!",
-        "type": "quality",
-        "rarity": "Strange"
-    },
-    {
-        "text": "Collector's Professional Killstreak Rocket Jumper",
-        "type": "quality",
-        "rarity": "Collector's"
-    },
-    {
-        "text": "🏳️‍⚧️",
-        "type": "quality",
-        "rarity": "Collector's"
-    },
-    {
-        "text": "Spoopy season!",
-        "type": "quality",
-        "rarity": "Haunted"
-    },
-    {
-        "text": "Trapper's Flap is the all-class hat",
-        "type": "decorated",
-        "rarity": "Elite",
-    },
-    {
-        "text": "Voices From Below",
-        "type": "quality",
-        "rarity": "Haunted"
-    },
-    {
-        "text": "Strange Isn't...",
-        "type": "quality",
-        "rarity": "Strange"
-    }
-]
+# Tool tips
+
+def load_tool_tips():
+    ## Loads tool tips from tooltips.json.
+
+    with open(TOOL_TIP_FILE, "r", encoding="utf-8") as file:
+        return json.load(file)
 
 
 def get_tool_tip():
+    ## Selects a random tool tip using rarity weights.
+
+    tool_tips = load_tool_tips()
+
     available = []
+    weights = []
 
-    for tip in TOOL_TIPS:
-        if tip["rarity"] == "Haunted" and datetime.now().month != 10:
-            continue
+    for tool_type, rarities in tool_tips.items():
+        for rarity, tips in rarities.items():
 
-        available.append(tip)
+            #### Haunted tool tips are only available during October.
 
-    weights = [
-        TOOL_TIP_WEIGHTS[tip["rarity"]]
-        for tip in available
-    ]
+            if rarity == "Haunted" and datetime.now().month != 10:
+                continue
+
+            for text in tips:
+                available.append({
+                    "text": text,
+                    "type": tool_type,
+                    "rarity": rarity
+                })
+
+                weights.append(TOOL_TIP_WEIGHTS[rarity])
 
     return random.choices(
         available,

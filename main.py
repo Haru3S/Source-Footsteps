@@ -27,8 +27,6 @@ MAX_PITCH = 0.5
 
 TIMING_VARIATION = 0.03
 
-TOOL_TIP = get_tool_tip()
-
 console = Console()
 
 
@@ -152,14 +150,16 @@ def get_positive_float(label, default, allow_zero=False):
 def configuration_menu(sample_count):
     console.clear()
 
-    rarity = TOOL_TIP["rarity"]
+    tool_tip = get_tool_tip()
+    rarity = tool_tip["rarity"]
     color = TOOL_TIP_COLORS[rarity]
 
     console.print(
         Panel.fit(
             "[bold]Source-Footsteps[/bold]\n"
-            f"[{color}]{TOOL_TIP['text']}[/{color}]",
-            border_style=color
+            f"[{color}]{tool_tip['text']}[/{color}]",
+            border_style=color,
+            width=60
         )
     )
 

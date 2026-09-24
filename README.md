@@ -53,7 +53,7 @@ python -m pip install -r requirements.txt
 Build the executable using PyInstaller:
 
 ```bash
-python -m PyInstaller --onefile --name SourceFootGen main.py
+python -m PyInstaller --onefile --name SourceFootGen --add-data "tooltips.json;." main.py
 ```
 
 The compiled executable will be located at `dist/SourceFootGen.exe`.
